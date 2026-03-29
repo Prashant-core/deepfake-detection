@@ -26,4 +26,4 @@ After 10 epochs of training on a balanced dataset of 140k images:
 2. Run Dashboard: `python -m streamlit run app.py`
 
 ---
-*Created by Prashant Kumar
+*Created by Prashant Kumar  
