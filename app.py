@@ -1,21 +1,26 @@
 import streamlit as st
-import os
-import time
-
-# --- CRITICAL CLOUD COMPATIBILITY IMPORTS ---
 import tensorflow as tf
-import tf_keras as keras  
-import numpy as np
+from tensorflow import keras
 from PIL import Image
+import numpy as np
+import time
+import os
 
-# --- THE "FORCE-FIX" FOR BATCH_SHAPE ERROR ---
-# This tells Keras to ignore the arguments it doesn't recognize
-from tf_keras.layers import InputLayer
+# --- THE "COMPATIBILITY SHIELD" ---
+# This fixes all versioning errors (DTypePolicy, batch_shape, InputLayer) at once
+from tensorflow.keras.layers import InputLayer, Conv2D
+
 class PatchedInputLayer(InputLayer):
     def __init__(self, *args, **kwargs):
         kwargs.pop('batch_shape', None)
         kwargs.pop('optional', None)
         super().__init__(*args, **kwargs)
+
+# Registry for the loader to recognize the modern environment
+custom_objects = {
+    'InputLayer': PatchedInputLayer,
+    'DTypePolicy': lambda **x: None # Ignores the policy error entirely
+}
 
 # --- 1. SCIENTIFIC DARK THEME SETUP ---
 st.set_page_config(page_title="Deepfake Shield | Forensic Portal", layout="wide")
@@ -32,7 +37,6 @@ st.markdown("""
         box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
     }
     .stStatus { background-color: #0a0a0a; border-left: 5px solid #00ffcc; }
-    [data-testid="stMetricValue"] { color: #00ffcc !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -42,9 +46,8 @@ def load_engine():
     model_path = 'model/deepfake_final.h5'
     if os.path.exists(model_path):
         try:
-            # We provide the patched layer to the loader
-            custom_objects = {'InputLayer': PatchedInputLayer}
-            return keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
+            # We load using the custom objects shield
+            return tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
         except Exception as e:
             st.error(f"Engine Load Error: {e}")
             return None
@@ -61,27 +64,22 @@ with st.sidebar:
     st.info("ENGINE STATUS: ONLINE")
     st.markdown("---")
     st.write("Model: MobileNetV2-Forensic")
-    st.write("Patch: InputLayer-Bypass")
-    st.write("Platform: Cloud-Production v1.0.9")
+    st.write("Architecture: Cloud-Native 2026")
+    st.write("Patch: Compatibility-Shield-v3")
 
 col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
     st.subheader("📡 Input Stream")
-    uploaded_file = st.file_uploader("Upload Image for Scanning...", type=["jpg", "png", "jpeg"])
-    
+    uploaded_file = st.file_uploader("Upload Image...", type=["jpg", "png", "jpeg"])
     if uploaded_file:
         image = Image.open(uploaded_file).convert('RGB')
         st.image(image, caption="TARGET_IDENTIFIED.JPG", use_container_width=True)
 
 with col2:
     st.subheader("📊 Forensic Analysis")
-    
     if uploaded_file and model:
-        with st.status("Initiating Neural Decomposition...", expanded=True) as status:
-            st.write("⚡ Extracting pixel-level artifacts...")
-            time.sleep(0.4)
-            
+        with st.status("Analyzing...", expanded=True) as status:
             img = image.resize((160, 160))
             img_array = tf.keras.utils.img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
@@ -89,27 +87,20 @@ with col2:
             
             prediction = model.predict(img_array)[0][0]
             
+            # Logic: 1.0 = Real, 0.0 = Fake
             is_fake = prediction < 0.5 
             confidence = (1 - prediction) if is_fake else prediction
             
-            st.write("🔍 Running Frequency Domain Analysis...")
-            time.sleep(0.4)
             status.update(label="ANALYSIS COMPLETE", state="complete", expanded=False)
 
         st.markdown("<div class='report-card'>", unsafe_allow_html=True)
         if is_fake:
-            st.markdown(f"<h2 style='color:#ff4b4b;'>🚨 VERDICT: DEEPFAKE DETECTED</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color:#ff4b4b;'>🚨 VERDICT: DEEPFAKE</h2>", unsafe_allow_html=True)
             st.error(f"Integrity Compromised: {confidence*100:.2f}% Probable Manipulation")
         else:
-            st.markdown(f"<h2 style='color:#00ffcc;'>✅ VERDICT: ASSET AUTHENTIC</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color:#00ffcc;'>✅ VERDICT: AUTHENTIC</h2>", unsafe_allow_html=True)
             st.success(f"Integrity Verified: {confidence*100:.2f}% Probability Real")
-        
         st.progress(float(confidence))
         st.markdown("</div>", unsafe_allow_html=True)
-
-        with st.expander("🔬 Technical Metadata"):
-            m1, m2 = st.columns(2)
-            m1.metric("Raw AI Score", f"{prediction:.4f}")
-            m2.metric("Threshold", "0.5000")
     else:
         st.info("WAITING FOR TARGET INPUT...")
