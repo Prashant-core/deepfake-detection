@@ -1,10 +1,12 @@
 import streamlit as st
-import tensorflow as tf
-import tf_keras  # CRITICAL: Fixes the TypeError for legacy .h5 models
-from PIL import Image
-import numpy as np
-import time
 import os
+import time
+
+# --- CRITICAL CLOUD COMPATIBILITY IMPORTS ---
+import tensorflow as tf
+import tf_keras as keras  # Use legacy keras for .h5 compatibility
+import numpy as np
+from PIL import Image
 
 # --- 1. SCIENTIFIC DARK THEME SETUP ---
 st.set_page_config(page_title="Deepfake Shield | Forensic Portal", layout="wide")
@@ -25,13 +27,17 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. FORENSIC ENGINE (COMPATIBILITY MODE) ---
+# --- 2. FORENSIC ENGINE ---
 @st.cache_resource
 def load_engine():
     model_path = 'model/deepfake_final.h5'
     if os.path.exists(model_path):
-        # Using tf_keras.models.load_model fixes the 'from_config' TypeError
-        return tf_keras.models.load_model(model_path, compile=False)
+        try:
+            # Loading using the tf_keras legacy library to fix the TypeError
+            return keras.models.load_model(model_path, compile=False)
+        except Exception as e:
+            st.error(f"Engine Load Error: {e}")
+            return None
     return None
 
 model = load_engine()
@@ -45,8 +51,8 @@ with st.sidebar:
     st.info("ENGINE STATUS: ONLINE")
     st.markdown("---")
     st.write("Model: MobileNetV2-Forensic")
-    st.write("Accuracy: 92.6% (Verified)")
-    st.write("Platform: Cloud-Optimized v1.0.7")
+    st.write("Architecture: Keras-Legacy")
+    st.write("Platform: Cloud-Production v1.0.8")
 
 col1, col2 = st.columns([1, 1], gap="large")
 
@@ -66,7 +72,7 @@ with col2:
             st.write("⚡ Extracting pixel-level artifacts...")
             time.sleep(0.4)
             
-            # --- AI LOGIC (LOCKED & CALIBRATED) ---
+            # --- AI LOGIC ---
             img = image.resize((160, 160))
             img_array = tf.keras.utils.img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
@@ -74,7 +80,7 @@ with col2:
             
             prediction = model.predict(img_array)[0][0]
             
-            # CALIBRATION: 1.0 is REAL, 0.0 is FAKE
+            # 1.0 is REAL, 0.0 is FAKE
             is_fake = prediction < 0.5 
             confidence = (1 - prediction) if is_fake else prediction
             
@@ -82,9 +88,8 @@ with col2:
             time.sleep(0.4)
             status.update(label="ANALYSIS COMPLETE", state="complete", expanded=False)
 
-        # Scientific Report Card
+        # Report Card
         st.markdown("<div class='report-card'>", unsafe_allow_html=True)
-        
         if is_fake:
             st.markdown(f"<h2 style='color:#ff4b4b;'>🚨 VERDICT: DEEPFAKE DETECTED</h2>", unsafe_allow_html=True)
             st.error(f"Integrity Compromised: {confidence*100:.2f}% Probable Manipulation")
@@ -95,11 +100,10 @@ with col2:
         st.progress(float(confidence))
         st.markdown("</div>", unsafe_allow_html=True)
 
-        with st.expander("🔬 View Technical Metadata"):
+        with st.expander("🔬 Technical Metadata"):
             m1, m2 = st.columns(2)
             m1.metric("Raw AI Score", f"{prediction:.4f}")
             m2.metric("Threshold", "0.5000")
-            st.info("System Note: Model optimized for MobileNetV2 latent space mapping.")
 
     else:
         st.info("WAITING FOR TARGET INPUT...")
