@@ -4,9 +4,18 @@ import time
 
 # --- CRITICAL CLOUD COMPATIBILITY IMPORTS ---
 import tensorflow as tf
-import tf_keras as keras  # Use legacy keras for .h5 compatibility
+import tf_keras as keras  
 import numpy as np
 from PIL import Image
+
+# --- THE "FORCE-FIX" FOR BATCH_SHAPE ERROR ---
+# This tells Keras to ignore the arguments it doesn't recognize
+from tf_keras.layers import InputLayer
+class PatchedInputLayer(InputLayer):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('batch_shape', None)
+        kwargs.pop('optional', None)
+        super().__init__(*args, **kwargs)
 
 # --- 1. SCIENTIFIC DARK THEME SETUP ---
 st.set_page_config(page_title="Deepfake Shield | Forensic Portal", layout="wide")
@@ -33,8 +42,9 @@ def load_engine():
     model_path = 'model/deepfake_final.h5'
     if os.path.exists(model_path):
         try:
-            # Loading using the tf_keras legacy library to fix the TypeError
-            return keras.models.load_model(model_path, compile=False)
+            # We provide the patched layer to the loader
+            custom_objects = {'InputLayer': PatchedInputLayer}
+            return keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
         except Exception as e:
             st.error(f"Engine Load Error: {e}")
             return None
@@ -51,8 +61,8 @@ with st.sidebar:
     st.info("ENGINE STATUS: ONLINE")
     st.markdown("---")
     st.write("Model: MobileNetV2-Forensic")
-    st.write("Architecture: Keras-Legacy")
-    st.write("Platform: Cloud-Production v1.0.8")
+    st.write("Patch: InputLayer-Bypass")
+    st.write("Platform: Cloud-Production v1.0.9")
 
 col1, col2 = st.columns([1, 1], gap="large")
 
@@ -72,7 +82,6 @@ with col2:
             st.write("⚡ Extracting pixel-level artifacts...")
             time.sleep(0.4)
             
-            # --- AI LOGIC ---
             img = image.resize((160, 160))
             img_array = tf.keras.utils.img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
@@ -80,7 +89,6 @@ with col2:
             
             prediction = model.predict(img_array)[0][0]
             
-            # 1.0 is REAL, 0.0 is FAKE
             is_fake = prediction < 0.5 
             confidence = (1 - prediction) if is_fake else prediction
             
@@ -88,7 +96,6 @@ with col2:
             time.sleep(0.4)
             status.update(label="ANALYSIS COMPLETE", state="complete", expanded=False)
 
-        # Report Card
         st.markdown("<div class='report-card'>", unsafe_allow_html=True)
         if is_fake:
             st.markdown(f"<h2 style='color:#ff4b4b;'>🚨 VERDICT: DEEPFAKE DETECTED</h2>", unsafe_allow_html=True)
@@ -104,6 +111,5 @@ with col2:
             m1, m2 = st.columns(2)
             m1.metric("Raw AI Score", f"{prediction:.4f}")
             m2.metric("Threshold", "0.5000")
-
     else:
         st.info("WAITING FOR TARGET INPUT...")
