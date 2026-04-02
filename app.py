@@ -1,5 +1,6 @@
 import streamlit as st
 import tensorflow as tf
+import tf_keras  # CRITICAL: Fixes the TypeError for legacy .h5 models
 from PIL import Image
 import numpy as np
 import time
@@ -10,13 +11,8 @@ st.set_page_config(page_title="Deepfake Shield | Forensic Portal", layout="wide"
 
 st.markdown("""
     <style>
-    /* Main Scientific Theme */
     .main { background-color: #050505; color: #00ffcc; font-family: 'Courier New', Courier, monospace; }
-    
-    /* Neon Glow Header */
     .stHeader { color: #00ffcc; text-shadow: 0 0 15px #00ffcc; border-bottom: 2px solid #00ffcc; padding-bottom: 10px; }
-    
-    /* Forensic Report Card */
     .report-card { 
         background-color: #111111; 
         border: 1px solid #00ffcc; 
@@ -24,25 +20,18 @@ st.markdown("""
         border-radius: 5px; 
         box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
     }
-    
-    /* System Status bar */
     .stStatus { background-color: #0a0a0a; border-left: 5px solid #00ffcc; }
-    
-    /* Metric styling */
     [data-testid="stMetricValue"] { color: #00ffcc !important; }
-    
-    /* Custom Sidebar */
-    [data-testid="stSidebar"] { background-color: #0a0a0a; border-right: 1px solid #333; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. FORENSIC ENGINE (OPTIMIZED FOR CLOUD) ---
+# --- 2. FORENSIC ENGINE (COMPATIBILITY MODE) ---
 @st.cache_resource
 def load_engine():
     model_path = 'model/deepfake_final.h5'
     if os.path.exists(model_path):
-        # UPDATE: compile=False reduces RAM usage by 40%, preventing cloud crashes
-        return tf.keras.models.load_model(model_path, compile=False)
+        # Using tf_keras.models.load_model fixes the 'from_config' TypeError
+        return tf_keras.models.load_model(model_path, compile=False)
     return None
 
 model = load_engine()
@@ -55,10 +44,9 @@ with st.sidebar:
     st.markdown("### 🛠️ System Controls")
     st.info("ENGINE STATUS: ONLINE")
     st.markdown("---")
-    st.write("🛰️ **Node:** Streamlit Cloud")
-    st.write("🧠 **Model:** MobileNetV2-Forensic")
-    st.write("📊 **Accuracy:** 92.6% (Verified)")
-    st.write("🚀 **Version:** 1.0.6 (Cloud-Optimized)")
+    st.write("Model: MobileNetV2-Forensic")
+    st.write("Accuracy: 92.6% (Verified)")
+    st.write("Platform: Cloud-Optimized v1.0.7")
 
 col1, col2 = st.columns([1, 1], gap="large")
 
@@ -82,15 +70,12 @@ with col2:
             img = image.resize((160, 160))
             img_array = tf.keras.utils.img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
-            # Standard MobileNetV2 preprocessing
             img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
             
             prediction = model.predict(img_array)[0][0]
             
             # CALIBRATION: 1.0 is REAL, 0.0 is FAKE
             is_fake = prediction < 0.5 
-            
-            # Calculate confidence based on verdict
             confidence = (1 - prediction) if is_fake else prediction
             
             st.write("🔍 Running Frequency Domain Analysis...")
@@ -114,7 +99,7 @@ with col2:
             m1, m2 = st.columns(2)
             m1.metric("Raw AI Score", f"{prediction:.4f}")
             m2.metric("Threshold", "0.5000")
-            st.info("System Note: High AI scores indicate consistent organic pixel signatures.")
+            st.info("System Note: Model optimized for MobileNetV2 latent space mapping.")
 
     else:
         st.info("WAITING FOR TARGET INPUT...")
