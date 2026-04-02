@@ -29,7 +29,8 @@ st.markdown("""
 def load_engine():
     model_path = 'model/deepfake_final.h5'
     if os.path.exists(model_path):
-        return tf.keras.models.load_model(model_path)
+        # We add compile=False to make loading faster and use less RAM
+        return tf.keras.models.load_model(model_path, compile=False)
     return None
 
 model = load_engine()
