@@ -1,6 +1,6 @@
 # 🛡️ Deepfake Detection : Neural Forensic Unit
 
-**Live Demo:** [Open Deepfake Shield Portal](https://deepfake-detection-uxtuvquixcfa39fdzkbcye.streamlit.app/)
+**Live Demo:** [Open Deepfake Shield Portal](https://deepfake-detection-m6wlt6zljowdxneyvbip5h.streamlit.app/)
 
 ### 🛠️ Tech Stack & Libraries
 The engine is built on a high-efficiency **MobileNetV2** architecture optimized for real-time cloud inference.
