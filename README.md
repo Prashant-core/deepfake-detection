@@ -1,29 +1,46 @@
-# 🛡️ Deepfake Shield AI
-### Senior Capstone: Image Forensic System for Synthetic Media Detection
+# 🛡️ Deepfake Detection : Neural Forensic Unit
 
-This project identifies AI-generated facial manipulations by analyzing pixel-level inconsistencies that are invisible to the human eye. It was developed to provide a lightweight, real-time solution for verifying the authenticity of social media and ID profile captures.
+**Live Demo:** [Open Deepfake Shield Portal](https://deepfake-detection-uxtuvquixcfa39fdzkbcye.streamlit.app/)
 
-## 🚀 The Tech Stack
-* **Deep Learning:** MobileNetV2 (TensorFlow/Keras)
-* **Methodology:** Transfer Learning + Fine-tuning (Top 30 layers)
-* **Deployment:** Streamlit (Local Web Dashboard)
-* **Hardware:** Optimized for NVIDIA RTX 5050 (Mixed Precision Training)
+### 🛠️ Tech Stack & Libraries
+The engine is built on a high-efficiency **MobileNetV2** architecture optimized for real-time cloud inference.
 
-## 📊 Results & Benchmarks
-After 10 epochs of training on a balanced dataset of 140k images:
-* **Final Accuracy:** 92.4% (Verified on Test Set)
-* **Inference Speed:** ~140ms per scan
-* **Key Insight:** The model specializes in detecting "boundary blurring" and "frequency artifacts" common in GAN-generated images.
-
-## 📁 Repository Guide
-* `train.py`: The training pipeline featuring data augmentation and early stopping.
-* `app.py`: The forensic portal UI (Upload -> Scan -> Verdict).
-* `model/`: Contains the optimized weights (`deepfake_final.h5`).
-* `.gitignore`: Configured to keep the 3GB+ raw dataset local while sharing the logic.
-
-## ⚙️ How to Run
-1. Activate environment: `.\venv\Scripts\Activate.ps1`
-2. Run Dashboard: `python -m streamlit run app.py`
+* **TensorFlow / Keras:** Primary framework for the CNN architecture and model weights.
+* **Streamlit:** Web-native interface for the forensic dashboard.
+* **Pillow (PIL):** Pre-processing, pixel normalization, and image scaling.
+* **NumPy:** Linear algebra for handling image tensors and probability arrays.
+* **OpenCV:** Utility for computer vision and asset decoding.
 
 ---
-*Created by Prashant Kumar  
+
+### ✅ Pros & ❌ Cons
+
+| Pros | Cons |
+| :--- | :--- |
+| **Low Latency:** High-speed scanning using MobileNetV2. | **Filter Sensitivity:** Can flag heavy filters as "Synthetic." |
+| **User-Centric UI:** Designed for clarity with zero-tuning required. | **Compression Loss:** Social media compression can hide artifacts. |
+| **Privacy First:** Assets are processed in-session and never stored. | **Single Subject:** Accuracy peaks with a single subject in frame. |
+
+---
+
+### 📡 System Capabilities
+
+**What it can do:**
+* **Detect GAN Signatures:** Identifies mathematical inconsistencies in skin texture and lighting.
+* **Probabilistic Verdicts:** Provides a confidence percentage rather than just a "Yes/No" guess.
+* **Neural Decomposition:** Scales and normalizes assets to 160x160 for precise artifact scanning.
+
+**What it can't do:**
+* **Video Analysis:** Currently limited to static image files (`.jpg`, `.png`, `.jpeg`).
+* **Human-Cleaned Fakes:** High-end fakes manually touched up by an artist may bypass detection.
+* **Contextual Analysis:** The AI detects "AI Pixels" but doesn't understand the intent of the image.
+
+---
+
+### 🔧 Local Installation
+1. **Clone:** `git clone https://github.com/Prashant-core/deepfake-detection.git`
+2. **Setup:** `pip install -r requirements.txt`
+3. **Launch:** `streamlit run app.py`
+
+---
+**Author:** Prashant
