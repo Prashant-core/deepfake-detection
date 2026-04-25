@@ -1,28 +1,30 @@
 import streamlit as st
 import tensorflow as tf
-from tensorflow import keras
+from tensorflow.keras.layers import InputLayer
 from PIL import Image
 import numpy as np
-import time
 import os
 
-# --- THE "COMPATIBILITY SHIELD" ---
-# This fixes all versioning errors (DTypePolicy, batch_shape, InputLayer) at once
-from tensorflow.keras.layers import InputLayer, Conv2D
-
-class PatchedInputLayer(InputLayer):
+# --- 1. THE COMPATIBILITY SHIELD ---
+# This class fixes the 'batch_shape' and 'shape' errors automatically
+class UniversalInputLayer(InputLayer):
     def __init__(self, *args, **kwargs):
+        # We ensure the layer always has the correct 160x160 shape 
+        # regardless of what the old file says
+        kwargs['input_shape'] = (160, 160, 3)
         kwargs.pop('batch_shape', None)
+        kwargs.pop('batch_input_shape', None)
         kwargs.pop('optional', None)
-        super().__init__(*args, **kwargs)
+        kwargs.pop('sparse', None)
+        kwargs.pop('ragged', None)
+        super().__init__(**kwargs)
 
-# Registry for the loader to recognize the modern environment
 custom_objects = {
-    'InputLayer': PatchedInputLayer,
-    'DTypePolicy': lambda **x: None # Ignores the policy error entirely
+    'InputLayer': UniversalInputLayer,
+    'DTypePolicy': lambda **x: None
 }
 
-# --- 1. SCIENTIFIC DARK THEME SETUP ---
+# --- 2. SCIENTIFIC DARK THEME SETUP ---
 st.set_page_config(page_title="Deepfake Shield | Forensic Portal", layout="wide")
 
 st.markdown("""
@@ -37,35 +39,39 @@ st.markdown("""
         box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
     }
     .stStatus { background-color: #0a0a0a; border-left: 5px solid #00ffcc; }
+    [data-testid="stMetricValue"] { color: #00ffcc !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. FORENSIC ENGINE ---
+# --- 3. FORENSIC ENGINE ---
 @st.cache_resource
 def load_engine():
     model_path = 'model/deepfake_final.h5'
     if os.path.exists(model_path):
         try:
-            # We load using the custom objects shield
-            return tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
+            # We use compile=False to save RAM and custom_objects for compatibility
+            return tf.keras.models.load_model(
+                model_path, 
+                custom_objects=custom_objects, 
+                compile=False
+            )
         except Exception as e:
-            st.error(f"Engine Load Error: {e}")
+            st.error(f"⚠️ Engine Offline: {e}")
             return None
     return None
 
 model = load_engine()
 
-# --- 3. UI LAYOUT ---
+# --- 4. UI LAYOUT ---
 st.markdown("<h1 class='stHeader'>🛡️ DEEPFAKE SHIELD: NEURAL FORENSIC UNIT</h1>", unsafe_allow_html=True)
-st.write(" ")
 
 with st.sidebar:
     st.markdown("### 🛠️ System Controls")
     st.info("ENGINE STATUS: ONLINE")
     st.markdown("---")
     st.write("Model: MobileNetV2-Forensic")
-    st.write("Architecture: Cloud-Native 2026")
-    st.write("Patch: Compatibility-Shield-v3")
+    st.write("Patch: Universal-Shape-Fix")
+    st.write("Platform: Production v1.1.0")
 
 col1, col2 = st.columns([1, 1], gap="large")
 
@@ -79,7 +85,8 @@ with col1:
 with col2:
     st.subheader("📊 Forensic Analysis")
     if uploaded_file and model:
-        with st.status("Analyzing...", expanded=True) as status:
+        # Fast Analysis (Removed time.sleep for speed)
+        with st.status("Analyzing Neural Patterns...", expanded=True) as status:
             img = image.resize((160, 160))
             img_array = tf.keras.utils.img_to_array(img)
             img_array = np.expand_dims(img_array, axis=0)
@@ -102,5 +109,8 @@ with col2:
             st.success(f"Integrity Verified: {confidence*100:.2f}% Probability Real")
         st.progress(float(confidence))
         st.markdown("</div>", unsafe_allow_html=True)
+        
+        with st.expander("🔬 View Metadata"):
+            st.metric("Raw AI Score", f"{prediction:.4f}")
     else:
         st.info("WAITING FOR TARGET INPUT...")
