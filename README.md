@@ -1,9 +1,9 @@
-# 🛡️ Deepfake Detection : Neural Forensic Unit
+# Deepfake Detection: Neural Forensic Unit
 
 **Live Demo:** [Open Deepfake Shield Portal](https://deepfake-detection-m6wlt6zljowdxneyvbip5h.streamlit.app/)
 
-### 🛠️ Tech Stack & Libraries
-The engine is built on a high-efficiency **MobileNetV2** architecture optimized for real-time cloud inference.
+## Tech Stack & Libraries
+The engine is built on a high-efficiency MobileNetV2 architecture optimized for real-time cloud inference.
 
 * **TensorFlow / Keras:** Primary framework for the CNN architecture and model weights.
 * **Streamlit:** Web-native interface for the forensic dashboard.
@@ -13,7 +13,7 @@ The engine is built on a high-efficiency **MobileNetV2** architecture optimized 
 
 ---
 
-### ✅ Pros & ❌ Cons
+## Pros & Cons
 
 | Pros | Cons |
 | :--- | :--- |
@@ -23,7 +23,7 @@ The engine is built on a high-efficiency **MobileNetV2** architecture optimized 
 
 ---
 
-### 📡 System Capabilities
+## System Capabilities
 
 **What it can do:**
 * **Detect GAN Signatures:** Identifies mathematical inconsistencies in skin texture and lighting.
@@ -37,10 +37,25 @@ The engine is built on a high-efficiency **MobileNetV2** architecture optimized 
 
 ---
 
-### 🔧 Local Installation
-1. **Clone:** `git clone https://github.com/Prashant-core/deepfake-detection.git`
-2. **Setup:** `pip install -r requirements.txt`
-3. **Launch:** `streamlit run app.py`
+## Project Structure
 
----
-**Author:** Prashant
+```text
+DEEP FAKE DETECTION/
+├── dataset/
+│   ├── Test/
+│   │   ├── Fake/
+│   │   └── Real/
+│   ├── Train/
+│   │   ├── Fake/
+│   │   └── Real/
+│   └── Validation/
+│       ├── Fake/
+│       └── Real/
+├── model/
+│   └── deepfake_final.h5
+├── venv/
+├── .gitignore
+├── app.py
+├── README.md
+├── requirements.txt
+└── train.py
